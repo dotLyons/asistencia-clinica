@@ -12,13 +12,13 @@ Route::post('register/pin', RegistrationPinController::class)
     ->middleware('guest')
     ->name('register.pin');
 
-Route::get('attendance/qr', [AttendanceQrCodeController::class, 'show'])->name('attendance.qr');
-Route::get('attendance/qr.svg', [AttendanceQrCodeController::class, 'image'])->name('attendance.qr.image');
-Route::get('attendance/qr/download', [AttendanceQrCodeController::class, 'download'])->name('attendance.qr.download');
-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('attendance/scan', AttendanceScanController::class)->name('attendance.scan');
+
+    Route::get('attendance/qr', [AttendanceQrCodeController::class, 'show'])->name('attendance.qr');
+    Route::get('attendance/qr.svg', [AttendanceQrCodeController::class, 'image'])->name('attendance.qr.image');
+    Route::get('attendance/qr/download', [AttendanceQrCodeController::class, 'download'])->name('attendance.qr.download');
 });
 
 require __DIR__.'/settings.php';

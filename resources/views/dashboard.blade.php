@@ -1,43 +1,69 @@
 <x-layouts::app :title="__('Dashboard')">
-    <div class="flex h-full w-full flex-1 flex-col gap-6">
-        <section class="rounded-lg border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-            <div class="mb-4 flex items-center justify-between gap-4">
+    <main class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-6 sm:px-8 lg:px-10">
+        <header class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+            <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
                 <div>
-                    <flux:heading size="lg">{{ __('My attendance') }}</flux:heading>
-                    <flux:text class="mt-1">{{ __('Latest attendance records') }}</flux:text>
+                    <p class="text-sm font-medium uppercase tracking-[0.18em] text-[#1e4f91]">{{ __('Panel del empleado') }}</p>
+                    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{{ __('Mi asistencia') }}</h1>
+                    <p class="mt-1 max-w-2xl text-sm text-slate-500">{{ __('Consulta tus registros recientes de entrada y salida.') }}</p>
+                </div>
+
+                <div class="flex items-center gap-3 rounded-xl border border-[#0f2f5f]/10 bg-[#0f2f5f]/5 px-4 py-2.5 shadow-xs">
+                    <flux:avatar
+                        :name="auth()->user()->name"
+                        :initials="auth()->user()->initials()"
+                        class="bg-[#0f2f5f] text-white shadow-xs"
+                    />
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-[#1e4f91]">{{ __('Empleado') }}</span>
+                        <span class="text-sm font-medium text-slate-900 leading-tight">{{ auth()->user()->name }}</span>
+                    </div>
                 </div>
             </div>
+        </header>
 
-            <div class="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
-                <table class="w-full text-sm">
-                    <thead class="bg-zinc-50 text-left text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-6 py-4">
+                <h2 class="text-base font-semibold text-slate-950">{{ __('Últimos registros') }}</h2>
+                <p class="mt-1 text-sm text-slate-500">{{ __('Historial ordenado desde el movimiento más reciente.') }}</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[680px] text-sm">
+                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         <tr>
-                            <th class="px-4 py-3 font-medium">{{ __('Type') }}</th>
-                            <th class="px-4 py-3 font-medium">{{ __('Date') }}</th>
-                            <th class="px-4 py-3 font-medium">{{ __('Time') }}</th>
-                            <th class="px-4 py-3 font-medium">{{ __('Employee ID') }}</th>
+                            <th class="px-6 py-3">{{ __('Tipo') }}</th>
+                            <th class="px-6 py-3">{{ __('Fecha') }}</th>
+                            <th class="px-6 py-3">{{ __('Hora') }}</th>
+                            <th class="px-6 py-3">{{ __('ID del empleado') }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                    <tbody class="divide-y divide-slate-100">
                         @forelse ($attendances as $attendance)
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">
-                                    {{ str($attendance->type)->title() }}
+                            <tr class="hover:bg-slate-50/80">
+                                <td class="px-6 py-4">
+                                    <span @class([
+                                        'inline-flex rounded-full px-2.5 py-1 text-xs font-semibold',
+                                        'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' => $attendance->type === 'entrada',
+                                        'bg-amber-50 text-amber-700 ring-1 ring-amber-200' => $attendance->type === 'salida',
+                                    ])>
+                                        {{ str($attendance->type)->title() }}
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                                    {{ $attendance->occurred_at->format('Y-m-d') }}
-                                </td>
-                                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                                    {{ $attendance->occurred_at->format('H:i:s') }}
-                                </td>
-                                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                                    {{ $attendance->user_id }}
-                                </td>
+                                <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('Y-m-d') }}</td>
+                                <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('H:i:s') }}</td>
+                                <td class="px-6 py-4 font-medium text-slate-900">{{ $attendance->user_id }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                                    {{ __('No attendance records yet.') }}
+                                <td colspan="4" class="px-6 py-12 text-center">
+                                    <div class="mx-auto max-w-sm">
+                                        <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                                            <flux:icon.clock class="size-6" />
+                                        </div>
+                                        <p class="mt-3 font-medium text-slate-900">{{ __('Aún no hay registros de asistencia.') }}</p>
+                                        <p class="mt-1 text-sm text-slate-500">{{ __('Cuando escanees el QR público, tus movimientos aparecerán aquí.') }}</p>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
@@ -45,5 +71,5 @@
                 </table>
             </div>
         </section>
-    </div>
+    </main>
 </x-layouts::app>

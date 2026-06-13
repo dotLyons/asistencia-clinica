@@ -1,21 +1,58 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-sm flex-col gap-2">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 mb-1 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                </a>
-                <div class="flex flex-col gap-6">
-                    {{ $slot }}
+    <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
+        <div class="grid min-h-svh lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1fr)]">
+            <section class="hidden bg-[#0f172a] text-white lg:flex lg:flex-col lg:justify-between lg:p-12">
+                <div>
+                    <a href="{{ route('home') }}" class="inline-flex items-center gap-3" wire:navigate>
+                        <span class="flex size-11 items-center justify-center rounded-xl bg-white text-[#0f2f5f]">
+                            <x-app-logo-icon class="size-6 fill-current" />
+                        </span>
+                        <span class="text-lg font-semibold tracking-tight">{{ config('app.name', 'Asistencia') }}</span>
+                    </a>
                 </div>
-            </div>
+
+                <div class="max-w-md space-y-5">
+                    <p class="text-sm font-medium uppercase tracking-[0.22em] text-blue-200">{{ __('Control corporativo') }}</p>
+                    <h1 class="text-4xl font-semibold leading-tight tracking-tight">{{ __('Asistencia clara, segura y trazable.') }}</h1>
+                    <p class="text-base leading-7 text-slate-300">{{ __('Un sistema enfocado en registrar ingresos y salidas con precisión, sin pasos innecesarios para el equipo.') }}</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 text-sm text-slate-300">
+                    <div class="rounded-lg border border-white/10 bg-white/5 p-4">
+                        <span class="block text-2xl font-semibold text-white">QR</span>
+                        <span>{{ __('Registro rápido') }}</span>
+                    </div>
+                    <div class="rounded-lg border border-white/10 bg-white/5 p-4">
+                        <span class="block text-2xl font-semibold text-white">24/7</span>
+                        <span>{{ __('Disponible') }}</span>
+                    </div>
+                    <div class="rounded-lg border border-white/10 bg-white/5 p-4">
+                        <span class="block text-2xl font-semibold text-white">ID</span>
+                        <span>{{ __('Trazabilidad') }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <main class="flex min-h-svh items-center justify-center p-6 md:p-10">
+                <div class="w-full max-w-md">
+                    <div class="mb-8 flex justify-center lg:hidden">
+                        <a href="{{ route('home') }}" class="inline-flex items-center gap-3 font-semibold text-slate-900" wire:navigate>
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-[#0f2f5f] text-white">
+                                <x-app-logo-icon class="size-6 fill-current" />
+                            </span>
+                            {{ config('app.name', 'Asistencia') }}
+                        </a>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-950/8">
+                        {{ $slot }}
+                    </div>
+                </div>
+            </main>
         </div>
 
         @persist('toast')

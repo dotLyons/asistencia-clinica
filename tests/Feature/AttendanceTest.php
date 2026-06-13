@@ -3,6 +3,7 @@
 use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -46,21 +47,66 @@ test('dashboard only shows the authenticated employee attendances', function () 
         ->assertDontSee('QR de asistencia');
 });
 
-test('attendance qr page is public', function () {
+test('attendance qr page is restricted to administrators', function () {
+    // 1. Guest access should redirect to login
     $this->get(route('attendance.qr'))
+        ->assertRedirect(route('login'));
+
+    // 2. Employee access should return 403
+    $employee = User::factory()->create();
+    $employee->assignRole(Role::findOrCreate('empleado'));
+    $this->actingAs($employee)
+        ->get(route('attendance.qr'))
+        ->assertForbidden();
+
+    // 3. Admin access should succeed
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::findOrCreate('administrador'));
+    $this->actingAs($admin)
+        ->get(route('attendance.qr'))
         ->assertOk()
-        ->assertSee('QR de asistencia')
+        ->assertSee('QR público para empleados')
         ->assertSee(route('attendance.qr.download'));
 });
 
-test('attendance qr image is public', function () {
+test('attendance qr image is restricted to administrators', function () {
+    // 1. Guest access should redirect to login
     $this->get(route('attendance.qr.image'))
+        ->assertRedirect(route('login'));
+
+    // 2. Employee access should return 403
+    $employee = User::factory()->create();
+    $employee->assignRole(Role::findOrCreate('empleado'));
+    $this->actingAs($employee)
+        ->get(route('attendance.qr.image'))
+        ->assertForbidden();
+
+    // 3. Admin access should succeed
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::findOrCreate('administrador'));
+    $this->actingAs($admin)
+        ->get(route('attendance.qr.image'))
         ->assertOk()
         ->assertHeader('Content-Type', 'image/svg+xml');
 });
 
-test('attendance qr can be downloaded publicly', function () {
+test('attendance qr download is restricted to administrators', function () {
+    // 1. Guest access should redirect to login
     $this->get(route('attendance.qr.download'))
+        ->assertRedirect(route('login'));
+
+    // 2. Employee access should return 403
+    $employee = User::factory()->create();
+    $employee->assignRole(Role::findOrCreate('empleado'));
+    $this->actingAs($employee)
+        ->get(route('attendance.qr.download'))
+        ->assertForbidden();
+
+    // 3. Admin access should succeed
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::findOrCreate('administrador'));
+    $this->actingAs($admin)
+        ->get(route('attendance.qr.download'))
         ->assertOk()
         ->assertHeader('Content-Type', 'image/svg+xml')
         ->assertHeader('Content-Disposition', 'attachment; filename="qr-asistencia.svg"');

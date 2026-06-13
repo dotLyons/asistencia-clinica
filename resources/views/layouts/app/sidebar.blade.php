@@ -1,41 +1,39 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.header>
+    <body class="min-h-screen text-slate-900 antialiased">
+        <flux:sidebar sticky collapsible="mobile" class="dark border-e border-white/10 bg-[#0f172a] text-slate-100 shadow-xl shadow-slate-950/10">
+            <flux:sidebar.header class="border-b border-white/10 px-4 py-5">
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
-            <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+            <flux:sidebar.nav class="px-3 py-4">
+                <flux:sidebar.group :heading="__('Plataforma')" class="grid text-slate-300">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    @if (auth()->user()->hasRole('administrador'))
+                        <flux:sidebar.item icon="qr-code" :href="route('attendance.qr')" target="_blank">
+                            {{ __('QR público') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
-
-            <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+            <div class="border-t border-white/10 p-3">
+                <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+            </div>
         </flux:sidebar>
 
-        <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
+        <flux:header class="border-b border-slate-200 bg-white/90 shadow-sm backdrop-blur lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+
+            <div class="ms-2 text-sm font-semibold text-slate-800">{{ config('app.name', 'Asistencia') }}</div>
 
             <flux:spacer />
 

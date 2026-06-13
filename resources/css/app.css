@@ -23,20 +23,27 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
+    --color-accent: #0f2f5f;
+    --color-accent-content: #0f2f5f;
     --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: #d7e7ff;
+        --color-accent-content: #d7e7ff;
+        --color-accent-foreground: #0f172a;
     }
 }
 
 @layer base {
+    html {
+        @apply bg-slate-100 text-slate-900;
+    }
+
+    body {
+        @apply min-h-screen bg-[radial-gradient(circle_at_top_left,#e0ecff_0,#f3f6fb_32rem,#eef2f7_100%)] text-slate-900 antialiased;
+    }
 
     *,
     ::after,
@@ -52,13 +59,13 @@
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight !text-slate-700;
 }
 
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
-    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+    @apply outline-hidden ring-2 ring-[#1e4f91] ring-offset-2 ring-offset-white;
 }
 
 /* \[:where(&)\]:size-4 {

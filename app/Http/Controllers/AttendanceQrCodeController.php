@@ -13,19 +13,30 @@ class AttendanceQrCodeController extends Controller
 {
     public function show(): View
     {
+        $this->authorizeAdmin();
+
         return view('attendance.qr');
     }
 
     public function image(): Response
     {
+        $this->authorizeAdmin();
+
         return $this->svgResponse();
     }
 
     public function download(): Response
     {
+        $this->authorizeAdmin();
+
         return $this->svgResponse([
             'Content-Disposition' => 'attachment; filename="qr-asistencia.svg"',
         ]);
+    }
+
+    private function authorizeAdmin(): void
+    {
+        abort_unless(auth()->check() && auth()->user()->hasRole('administrador'), 403);
     }
 
     /**

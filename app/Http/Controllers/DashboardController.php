@@ -12,6 +12,10 @@ class DashboardController extends Controller
      */
     public function __invoke(Request $request): View
     {
+        if ($request->user()->hasRole('administrador')) {
+            return view('dashboard-admin');
+        }
+
         $attendances = $request->user()
             ->attendances()
             ->latest('occurred_at')
