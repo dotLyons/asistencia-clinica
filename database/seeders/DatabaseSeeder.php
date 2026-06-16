@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         // Create 4 empleados with test passwords
         for ($i = 1; $i <= 4; $i++) {
-            $user = User::factory()->create([
+            $user = User::create([
                 'name' => "Empleado {$i}",
                 'email' => "empleado{$i}@example.com",
                 'password' => Hash::make("empleado{$i}"),
@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // Create default admin user
-        $admin = User::factory()->create([
+        $admin = User::create([
             'name' => 'Administrador',
             'email' => 'admin@example.com',
             'password' => Hash::make('administrador'),
