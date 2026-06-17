@@ -14,7 +14,8 @@ Route::post('register/pin', RegistrationPinController::class)
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
-    Route::get('attendance/scan', AttendanceScanController::class)->name('attendance.scan');
+    Route::get('attendance/scan', [AttendanceScanController::class, 'show'])->name('attendance.scan');
+    Route::post('attendance/scan', [AttendanceScanController::class, 'store'])->name('attendance.scan.store');
 
     Route::get('attendance/qr', [AttendanceQrCodeController::class, 'show'])->name('attendance.qr');
     Route::get('attendance/qr.svg', [AttendanceQrCodeController::class, 'image'])->name('attendance.qr.image');

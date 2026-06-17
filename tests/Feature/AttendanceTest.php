@@ -7,22 +7,41 @@ use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
-test('employee scan alternates between entry and exit', function () {
+test('employee scan page renders and post registers attendance with coordinates', function () {
     $user = User::factory()->create();
 
+    // 1. GET page should render the intermediate geolocation view
     $this->actingAs($user)
         ->get(route('attendance.scan'))
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertOk()
+        ->assertViewIs('attendance.scan');
 
-    expect($user->attendances()->first())
-        ->type->toBe('entrada');
-
+    // 2. POST should store the attendance record with coordinates
     $this->actingAs($user)
-        ->get(route('attendance.scan'))
+        ->post(route('attendance.scan.store'), [
+            'latitude' => 40.7128,
+            'longitude' => -74.0060,
+        ])
         ->assertRedirect(route('dashboard', absolute: false));
 
-    expect($user->attendances()->latest('id')->first())
-        ->type->toBe('salida');
+    $attendance = $user->attendances()->first();
+    expect($attendance)->not->toBeNull();
+    expect($attendance->type)->toBe('entrada');
+    expect((float) $attendance->latitude)->toBe(40.7128);
+    expect((float) $attendance->longitude)->toBe(-74.0060);
+
+    // 3. Second POST should record a exit (salida)
+    $this->actingAs($user)
+        ->post(route('attendance.scan.store'), [
+            'latitude' => 40.7130,
+            'longitude' => -74.0065,
+        ])
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $lastAttendance = $user->attendances()->latest('id')->first();
+    expect($lastAttendance->type)->toBe('salida');
+    expect((float) $lastAttendance->latitude)->toBe(40.7130);
+    expect((float) $lastAttendance->longitude)->toBe(-74.0065);
 });
 
 test('dashboard only shows the authenticated employee attendances', function () {

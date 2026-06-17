@@ -64,7 +64,7 @@ test('admin dashboard can search employees', function () {
         ->assertDontSee('John Doe');
 });
 
-test('admin dashboard can select employee and toggle modal visibility', function () {
+test('admin dashboard can select employee and view their profile', function () {
     $admin = User::factory()->create();
     $admin->assignRole(Role::findOrCreate('administrador'));
 
@@ -75,5 +75,8 @@ test('admin dashboard can select employee and toggle modal visibility', function
         ->test('admin-dashboard')
         ->call('selectEmployee', $employee->id)
         ->assertSet('selectedEmployeeId', $employee->id)
-        ->assertSet('showHistoryModal', true);
+        ->assertSee('John Doe')
+        ->assertSee('Volver al listado')
+        ->assertSee('Horas esta semana')
+        ->assertSee('Horas este mes');
 });

@@ -35,7 +35,7 @@
                             <th class="px-6 py-3">{{ __('Tipo') }}</th>
                             <th class="px-6 py-3">{{ __('Fecha') }}</th>
                             <th class="px-6 py-3">{{ __('Hora') }}</th>
-                            <th class="px-6 py-3">{{ __('ID del empleado') }}</th>
+                            <th class="px-6 py-3">{{ __('Ubicación') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -52,7 +52,19 @@
                                 </td>
                                 <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('Y-m-d') }}</td>
                                 <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('H:i:s') }}</td>
-                                <td class="px-6 py-4 font-medium text-slate-900">{{ $attendance->user_id }}</td>
+                                <td class="px-6 py-4 text-slate-700">
+                                    @if ($attendance->latitude && $attendance->longitude)
+                                        <a href="https://www.google.com/maps/search/?api=1&query={{ $attendance->latitude }},{{ $attendance->longitude }}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium hover:underline">
+                                            <svg class="size-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            <span>{{ round($attendance->latitude, 4) }}, {{ round($attendance->longitude, 4) }}</span>
+                                        </a>
+                                    @else
+                                        <span class="text-slate-400">—</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
