@@ -20,6 +20,7 @@ class Attendance extends Model
         'occurred_at',
         'latitude',
         'longitude',
+        'section_id',
     ];
 
     /**
@@ -40,5 +41,15 @@ class Attendance extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the section that this attendance belongs to.
+     *
+     * @return BelongsTo<Section, $this>
+     */
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(Section::class);
     }
 }

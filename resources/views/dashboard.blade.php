@@ -33,6 +33,7 @@
                     <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         <tr>
                             <th class="px-6 py-3">{{ __('Tipo') }}</th>
+                            <th class="px-6 py-3">{{ __('Sección') }}</th>
                             <th class="px-6 py-3">{{ __('Fecha') }}</th>
                             <th class="px-6 py-3">{{ __('Hora') }}</th>
                             <th class="px-6 py-3">{{ __('Ubicación') }}</th>
@@ -50,6 +51,7 @@
                                         {{ str($attendance->type)->title() }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 text-slate-700 font-medium">{{ $attendance->section?->name ?? '—' }}</td>
                                 <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('Y-m-d') }}</td>
                                 <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('H:i:s') }}</td>
                                 <td class="px-6 py-4 text-slate-700">
@@ -68,13 +70,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
+                                <td colspan="5" class="px-6 py-12 text-center">
                                     <div class="mx-auto max-w-sm">
                                         <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
                                             <flux:icon.clock class="size-6" />
                                         </div>
                                         <p class="mt-3 font-medium text-slate-900">{{ __('Aún no hay registros de asistencia.') }}</p>
-                                        <p class="mt-1 text-sm text-slate-500">{{ __('Cuando escanees el QR público, tus movimientos aparecerán aquí.') }}</p>
+                                        <p class="mt-1 text-sm text-slate-500">{{ __('Cuando escanees el QR de tu sección, tus movimientos aparecerán aquí.') }}</p>
                                     </div>
                                 </td>
                             </tr>

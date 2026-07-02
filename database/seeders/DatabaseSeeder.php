@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Section;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,6 +20,20 @@ class DatabaseSeeder extends Seeder
     {
         $empleadoRole = Role::findOrCreate('empleado');
         $adminRole = Role::findOrCreate('administrador');
+
+        // Create default sections
+        Section::create([
+            'name' => 'Recepción',
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+        ]);
+        Section::create([
+            'name' => 'Quirófano',
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+        ]);
+        Section::create([
+            'name' => 'Consultorios',
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+        ]);
 
         // Create 4 empleados with test passwords
         for ($i = 1; $i <= 4; $i++) {

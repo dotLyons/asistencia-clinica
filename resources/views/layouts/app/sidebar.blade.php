@@ -16,8 +16,8 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                     @if (auth()->user()->hasRole('administrador'))
-                        <flux:sidebar.item icon="qr-code" :href="route('attendance.qr')" target="_blank">
-                            {{ __('QR público') }}
+                        <flux:sidebar.item icon="squares-2x2" :href="route('admin.sections')" :current="request()->routeIs('admin.sections')" wire:navigate>
+                            {{ __('Secciones') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>

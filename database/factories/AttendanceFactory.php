@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Attendance;
+use App\Models\Section;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,6 +21,7 @@ class AttendanceFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
+            'section_id' => Section::factory(),
             'type' => fake()->randomElement(['entrada', 'salida']),
             'occurred_at' => fake()->dateTimeBetween('-1 month'),
         ];

@@ -3,6 +3,7 @@
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
+use App\Models\Section;
 use App\Models\Attendance;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,25 +14,48 @@ new class extends Component
     public string $search = '';
     public string $tab = 'employees'; // 'employees' or 'history'
     public ?int $selectedEmployeeId = null;
+    public ?int $employeeSectionId = null;
+    public ?int $selectedSectionId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'tab' => ['except' => 'employees'],
         'selectedEmployeeId' => ['except' => null],
+        'selectedSectionId' => ['except' => null],
     ];
 
     public function updatingSearch(): void
     {
         $this->resetPage('employees-page');
         $this->resetPage('history-page');
+        $this->resetPage('section-employees-page');
+    }
+
+    public function updatingSelectedSectionId(): void
+    {
+        $this->resetPage('section-employees-page');
+        $this->resetPage('section-history-page');
     }
 
     public function selectEmployee(int $id): void
     {
         $this->selectedEmployeeId = $id;
+        $employee = User::find($id);
+        $this->employeeSectionId = $employee?->section_id;
         $this->resetPage('employee-attendances-page');
     }
 
+    public function updatedEmployeeSectionId($value): void
+    {
+        if ($this->selectedEmployeeId) {
+            $employee = User::find($this->selectedEmployeeId);
+            if ($employee) {
+                $employee->section_id = $value ?: null;
+                $employee->save();
+                \Flux\Flux::toast(variant: 'success', text: __('Sección asignada correctamente.'));
+            }
+        }
+    }
     private function getHoursWorked(User $user, \Carbon\CarbonInterface $start, \Carbon\CarbonInterface $end): float
     {
         $attendances = $user->attendances()
@@ -59,6 +83,58 @@ new class extends Component
         return round($totalSeconds / 3600, 1);
     }
 
+    private function getTimelineSegmentsForDate(User $employee, \Carbon\CarbonInterface $date): array
+    {
+        $attendances = $employee->attendances()
+            ->whereDate('occurred_at', $date)
+            ->orderBy('occurred_at', 'asc')
+            ->get();
+
+        $segments = [];
+        $totalHours = 0.0;
+        $lastEntry = null;
+
+        foreach ($attendances as $att) {
+            if ($att->type === 'entrada') {
+                $lastEntry = $att->occurred_at;
+            } elseif ($att->type === 'salida' && $lastEntry) {
+                $startSec = $lastEntry->diffInSeconds($date->copy()->startOfDay());
+                $durationSec = $att->occurred_at->diffInSeconds($lastEntry);
+
+                $segments[] = [
+                    'start_pct' => ($startSec / 86400) * 100,
+                    'duration_pct' => ($durationSec / 86400) * 100,
+                    'start_time' => $lastEntry->format('H:i'),
+                    'end_time' => $att->occurred_at->format('H:i'),
+                    'duration_hrs' => round($durationSec / 3600, 2),
+                ];
+                $totalHours += $durationSec / 3600;
+                $lastEntry = null;
+            }
+        }
+
+        if ($lastEntry) {
+            $startSec = $lastEntry->diffInSeconds($date->copy()->startOfDay());
+            $endOfSegment = $date->isToday() ? now() : $date->copy()->endOfDay();
+            $durationSec = $endOfSegment->diffInSeconds($lastEntry);
+
+            $segments[] = [
+                'start_pct' => ($startSec / 86400) * 100,
+                'duration_pct' => ($durationSec / 86400) * 100,
+                'start_time' => $lastEntry->format('H:i'),
+                'end_time' => $date->isToday() ? __('Activo') : $endOfSegment->format('H:i'),
+                'duration_hrs' => round($durationSec / 3600, 2),
+                'is_active' => $date->isToday(),
+            ];
+            $totalHours += $durationSec / 3600;
+        }
+
+        return [
+            'segments' => $segments,
+            'total_hours' => round($totalHours, 1),
+        ];
+    }
+
     public function with(): array
     {
         if ($this->selectedEmployeeId) {
@@ -68,6 +144,9 @@ new class extends Component
             $hoursThisWeek = 0.0;
             $hoursThisMonth = 0.0;
             $employeeAttendances = null;
+            $timelineSegments = [];
+            $totalHoursToday = 0.0;
+            $weeklyTimelines = [];
 
             if ($selectedEmployee) {
                 $lastAttendance = $selectedEmployee->attendances()
@@ -80,9 +159,30 @@ new class extends Component
                 $hoursThisMonth = $this->getHoursWorked($selectedEmployee, now()->startOfMonth(), now()->endOfMonth());
 
                 $employeeAttendances = $selectedEmployee->attendances()
+                    ->with('section')
                     ->latest('occurred_at')
                     ->latest('id')
                     ->paginate(10, pageName: 'employee-attendances-page');
+
+                // Today
+                $todayData = $this->getTimelineSegmentsForDate($selectedEmployee, today());
+                $timelineSegments = $todayData['segments'];
+                $totalHoursToday = $todayData['total_hours'];
+
+                // Weekly (Lunes a Domingo)
+                $startOfWeek = now()->startOfWeek();
+                for ($i = 0; $i < 7; $i++) {
+                    $date = $startOfWeek->copy()->addDays($i);
+                    $dayData = $this->getTimelineSegmentsForDate($selectedEmployee, $date);
+                    $weeklyTimelines[] = [
+                        'date_string' => $date->translatedFormat('l d/m'),
+                        'is_today' => $date->isToday(),
+                        'is_future' => $date->isAfter(today()),
+                        'segments' => $dayData['segments'],
+                        'total_hours' => $dayData['total_hours'],
+                        'date_val' => $date,
+                    ];
+                }
             }
 
             return [
@@ -92,6 +192,10 @@ new class extends Component
                 'hoursThisWeek' => $hoursThisWeek,
                 'hoursThisMonth' => $hoursThisMonth,
                 'employeeAttendances' => $employeeAttendances,
+                'timelineSegments' => $timelineSegments,
+                'totalHoursToday' => $totalHoursToday,
+                'weeklyTimelines' => $weeklyTimelines,
+                'allSections' => Section::orderBy('name')->get(),
             ];
         }
 
@@ -112,6 +216,11 @@ new class extends Component
         $movementsToday = Attendance::whereDate('occurred_at', today())->count();
 
         // Fetch based on active tab
+        $employees = null;
+        $history = null;
+        $sectionEmployees = null;
+        $sectionHistory = null;
+
         if ($this->tab === 'employees') {
             $employees = User::whereDoesntHave('roles', function (Builder $query) {
                 $query->where('name', 'administrador');
@@ -128,12 +237,8 @@ new class extends Component
             }])
             ->orderBy('name')
             ->paginate(10, pageName: 'employees-page');
-
-            $history = null;
-        } else {
-            $employees = null;
-
-            $history = Attendance::with('user')
+        } elseif ($this->tab === 'history') {
+            $history = Attendance::with(['user', 'section'])
                 ->whereHas('user', function (Builder $query) {
                     $query->whereDoesntHave('roles', function (Builder $q) {
                         $q->where('name', 'administrador');
@@ -148,6 +253,28 @@ new class extends Component
                 ->latest('occurred_at')
                 ->latest('id')
                 ->paginate(15, pageName: 'history-page');
+        } elseif ($this->tab === 'section_history') {
+            if ($this->selectedSectionId) {
+                $sectionEmployees = User::whereDoesntHave('roles', function (Builder $query) {
+                    $query->where('name', 'administrador');
+                })
+                ->where('section_id', $this->selectedSectionId)
+                ->when($this->search, function (Builder $query) {
+                    $query->where(function ($q) {
+                        $q->where('name', 'like', '%' . $this->search . '%')
+                          ->orWhere('email', 'like', '%' . $this->search . '%');
+                    });
+                })
+                ->withCount('attendances')
+                ->orderBy('name')
+                ->paginate(10, pageName: 'section-employees-page');
+
+                $sectionHistory = Attendance::with('user')
+                    ->where('section_id', $this->selectedSectionId)
+                    ->latest('occurred_at')
+                    ->latest('id')
+                    ->paginate(15, pageName: 'section-history-page');
+            }
         }
 
         return [
@@ -156,7 +283,10 @@ new class extends Component
             'movementsToday' => $movementsToday,
             'employees' => $employees,
             'history' => $history,
+            'sectionEmployees' => $sectionEmployees,
+            'sectionHistory' => $sectionHistory,
             'selectedEmployee' => null,
+            'allSections' => Section::orderBy('name')->get(),
         ];
     }
 };
@@ -168,15 +298,24 @@ new class extends Component
         <div class="flex flex-col gap-6">
             <!-- Header / Navigation -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-                <div class="flex items-center gap-4">
-                    <flux:avatar
-                        :name="$selectedEmployee->name"
-                        :initials="$selectedEmployee->initials()"
-                        class="bg-[#0f2f5f] text-white size-14 shadow-xs"
-                    />
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-950">{{ $selectedEmployee->name }}</h1>
-                        <p class="text-sm text-slate-500">{{ $selectedEmployee->email }}</p>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+                    <div class="flex items-center gap-4">
+                        <flux:avatar
+                            :name="$selectedEmployee->name"
+                            :initials="$selectedEmployee->initials()"
+                            class="bg-[#0f2f5f] text-white size-14 shadow-xs"
+                        />
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-950">{{ $selectedEmployee->name }}</h1>
+                            <p class="text-sm text-slate-500">{{ $selectedEmployee->email }}</p>
+                        </div>
+                    </div>
+                    <div class="w-64 sm:border-s sm:border-slate-200 sm:ps-6">
+                        <flux:select wire:model.live="employeeSectionId" placeholder="{{ __('Sin sección asignada') }}" label="{{ __('Sección Asignada') }}">
+                            @foreach ($allSections as $sec)
+                                <flux:select.option value="{{ $sec->id }}">{{ $sec->name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
                     </div>
                 </div>
                 
@@ -257,6 +396,151 @@ new class extends Component
                 </div>
             </div>
 
+            <!-- Línea de Tiempo de Horas Trabajadas Hoy -->
+            <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-slate-950">{{ __('Línea de Tiempo de Presencia (Hoy)') }}</h3>
+                        <p class="text-xs text-slate-500">{{ __('Visualización de los tramos trabajados durante las 24 horas del día de hoy.') }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Total Hoy') }}</p>
+                        <p class="text-xl font-bold text-[#0f2f5f]">{{ $totalHoursToday }} hrs</p>
+                    </div>
+                </div>
+
+                <!-- Barra de Línea de Tiempo -->
+                <div class="relative h-6 w-full rounded-lg bg-slate-100/80 border border-slate-200 overflow-hidden">
+                    <!-- Segmentos Trabajados -->
+                    @foreach ($timelineSegments as $seg)
+                        <div 
+                            class="absolute top-0 bottom-0 @if(isset($seg['is_active'])) bg-gradient-to-r from-emerald-400 to-teal-500 animate-pulse @else bg-gradient-to-r from-[#0f2f5f] to-[#1e4f91] @endif rounded-xs cursor-help"
+                            style="left: {{ $seg['start_pct'] }}%; width: {{ $seg['duration_pct'] }}%;"
+                            title="{{ $seg['start_time'] }} - {{ $seg['end_time'] }} ({{ $seg['duration_hrs'] }} hrs)"
+                        >
+                        </div>
+                    @endforeach
+
+                    <!-- Indicador de Hora Actual -->
+                    @php
+                        $nowPct = (now()->diffInSeconds(today()) / 86400) * 100;
+                    @endphp
+                    @if ($nowPct >= 0 && $nowPct <= 100)
+                        <div class="absolute top-0 bottom-0 w-0.5 bg-rose-500 z-10 animate-pulse" style="left: {{ $nowPct }}%;" title="{{ __('Hora actual: :time', ['time' => now()->format('H:i')]) }}">
+                            <div class="absolute -top-1 -left-1 size-2 rounded-full bg-rose-500"></div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Ejes de Tiempo / Horas de Referencia -->
+                <div class="flex justify-between text-[10px] font-semibold text-slate-400 px-1 uppercase">
+                    <span>00:00</span>
+                    <span>04:00</span>
+                    <span>08:00</span>
+                    <span>12:00</span>
+                    <span>16:00</span>
+                    <span>20:00</span>
+                    <span>24:00</span>
+                </div>
+
+                <!-- Detalle de Tramos -->
+                @if (count($timelineSegments) > 0)
+                    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 pt-2">
+                        @foreach ($timelineSegments as $seg)
+                            <div class="flex items-center gap-2.5 rounded-lg border border-slate-100 bg-slate-50/50 p-2.5 text-xs">
+                                <span @class([
+                                    'size-2.5 rounded-full',
+                                    'bg-emerald-500' => isset($seg['is_active']),
+                                    'bg-[#0f2f5f]' => !isset($seg['is_active']),
+                                ])></span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-slate-900">{{ $seg['start_time'] }} - {{ $seg['end_time'] }}</p>
+                                    <p class="text-[10px] text-slate-500">{{ __('Duración:') }} {{ $seg['duration_hrs'] }} hrs</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-center text-xs text-slate-400 py-2">
+                        {{ __('No hay registros de presencia para el día de hoy.') }}
+                    </p>
+                @endif
+            </div>
+
+            <!-- Línea de Tiempo Semanal (Lunes a Domingo) -->
+            <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-6">
+                <div>
+                    <h3 class="text-base font-semibold text-slate-950">{{ __('Líneas de Tiempo Semanales') }}</h3>
+                    <p class="text-xs text-slate-500">{{ __('Desglose diario del tiempo trabajado durante la semana actual.') }}</p>
+                </div>
+
+                <div class="space-y-4">
+                    @foreach ($weeklyTimelines as $day)
+                        <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center">
+                            <!-- Día -->
+                            <div class="w-32 text-xs font-semibold text-slate-700 capitalize">
+                                {{ $day['date_string'] }}
+                                @if ($day['is_today'])
+                                    <span class="ml-1 inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-medium text-emerald-700 ring-1 ring-emerald-600/10">
+                                        {{ __('Hoy') }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            <!-- Barra de Tiempo Compuesta -->
+                            <div class="relative h-4.5 flex-1 rounded-md bg-slate-100/80 border border-slate-200 overflow-hidden">
+                                @if ($day['is_future'])
+                                    <!-- Día Futuro (Línea discontinua) -->
+                                    <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9_10px,#f8fafc_10px,#f8fafc_20px)] opacity-50"></div>
+                                @else
+                                    <!-- Segmentos -->
+                                    @foreach ($day['segments'] as $seg)
+                                        <div 
+                                            class="absolute top-0 bottom-0 @if(isset($seg['is_active'])) bg-gradient-to-r from-emerald-400 to-teal-500 animate-pulse @else bg-gradient-to-r from-[#0f2f5f] to-[#1e4f91] @endif rounded-xs cursor-help"
+                                            style="left: {{ $seg['start_pct'] }}%; width: {{ $seg['duration_pct'] }}%;"
+                                            title="{{ $seg['start_time'] }} - {{ $seg['end_time'] }} ({{ $seg['duration_hrs'] }} hrs)"
+                                        >
+                                        </div>
+                                    @endforeach
+
+                                    <!-- Marcador de Hora Actual si es hoy -->
+                                    @if ($day['is_today'])
+                                        @php
+                                            $nowPct = (now()->diffInSeconds(today()) / 86400) * 100;
+                                        @endphp
+                                        @if ($nowPct >= 0 && $nowPct <= 100)
+                                            <div class="absolute top-0 bottom-0 w-0.5 bg-rose-500 z-10 animate-pulse" style="left: {{ $nowPct }}%;" title="{{ __('Hora actual: :time', ['time' => now()->format('H:i')]) }}">
+                                                <div class="absolute -top-0.5 -left-1 size-1.5 rounded-full bg-rose-500"></div>
+                                            </div>
+                                        @endif
+                                    @endif
+                                @endif
+                            </div>
+
+                            <!-- Total del Día -->
+                            <div class="w-16 text-right text-xs font-bold text-slate-900">
+                                @if ($day['is_future'])
+                                    <span class="text-slate-400 font-normal">—</span>
+                                @else
+                                    {{ $day['total_hours'] }} hrs
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- Ejes de Referencia Horaria -->
+                <div class="flex justify-between text-[10px] font-semibold text-slate-400 px-1 uppercase sm:pl-32 sm:pr-16">
+                    <span>00:00</span>
+                    <span>04:00</span>
+                    <span>08:00</span>
+                    <span>12:00</span>
+                    <span>16:00</span>
+                    <span>20:00</span>
+                    <span>24:00</span>
+                </div>
+            </div>
+
             <!-- Attendance History Table -->
             <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="border-b border-slate-200 px-6 py-4">
@@ -269,6 +553,7 @@ new class extends Component
                         <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                             <tr>
                                 <th class="px-6 py-3">{{ __('Tipo') }}</th>
+                                <th class="px-6 py-3">{{ __('Sección') }}</th>
                                 <th class="px-6 py-3">{{ __('Fecha') }}</th>
                                 <th class="px-6 py-3">{{ __('Hora') }}</th>
                                 <th class="px-6 py-3">{{ __('Ubicación') }}</th>
@@ -286,6 +571,7 @@ new class extends Component
                                             {{ str($attendance->type)->title() }}
                                         </span>
                                     </td>
+                                    <td class="px-6 py-4 text-slate-700 font-medium">{{ $attendance->section?->name ?? '—' }}</td>
                                     <td class="px-6 py-4 text-slate-700 font-medium">{{ $attendance->occurred_at->format('Y-m-d') }}</td>
                                     <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('H:i:s') }}</td>
                                     <td class="px-6 py-4 text-slate-700">
@@ -304,7 +590,7 @@ new class extends Component
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-500">
                                         {{ __('Aún no hay registros de asistencia para este empleado.') }}
                                     </td>
                                 </tr>
@@ -393,6 +679,13 @@ new class extends Component
                 ])>
                     {{ __('Historial General') }}
                 </button>
+                <button wire:click="$set('tab', 'section_history')" @class([
+                    'px-4 py-2 text-sm font-semibold border-b-2 transition-colors cursor-pointer',
+                    'border-[#0f2f5f] text-[#0f2f5f]' => $tab === 'section_history',
+                    'border-transparent text-slate-500 hover:text-slate-700' => $tab !== 'section_history'
+                ])>
+                    {{ __('Historial por Sección') }}
+                </button>
             </div>
         </div>
 
@@ -465,7 +758,7 @@ new class extends Component
                     </div>
                 @endif
             </section>
-        @else
+        @elseif ($tab === 'history')
             <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[680px] text-sm">
@@ -474,6 +767,7 @@ new class extends Component
                                 <th class="px-6 py-3">{{ __('Empleado') }}</th>
                                 <th class="px-6 py-3">{{ __('Correo') }}</th>
                                 <th class="px-6 py-3">{{ __('Tipo') }}</th>
+                                <th class="px-6 py-3">{{ __('Sección') }}</th>
                                 <th class="px-6 py-3">{{ __('Fecha') }}</th>
                                 <th class="px-6 py-3">{{ __('Hora') }}</th>
                                 <th class="px-6 py-3">{{ __('Ubicación') }}</th>
@@ -502,6 +796,7 @@ new class extends Component
                                             {{ str($record->type)->title() }}
                                         </span>
                                     </td>
+                                    <td class="px-6 py-4 text-slate-700 font-medium">{{ $record->section?->name ?? '—' }}</td>
                                     <td class="px-6 py-4 text-slate-600">{{ $record->occurred_at->format('Y-m-d') }}</td>
                                     <td class="px-6 py-4 text-slate-600">{{ $record->occurred_at->format('H:i:s') }}</td>
                                     <td class="px-6 py-4 text-slate-700">
@@ -520,7 +815,7 @@ new class extends Component
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-slate-500">
                                         {{ __('No hay registros de asistencia.') }}
                                     </td>
                                 </tr>
@@ -534,6 +829,135 @@ new class extends Component
                     </div>
                 @endif
             </section>
+        @else
+            <!-- Pestaña de Historial por Sección -->
+            <div class="flex flex-col gap-6">
+                <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+                    <div class="max-w-md">
+                        <flux:select wire:model.live="selectedSectionId" placeholder="{{ __('Seleccionar sección...') }}" label="{{ __('Selecciona una sección') }}">
+                            @foreach ($allSections as $sec)
+                                <flux:select.option value="{{ $sec->id }}">{{ $sec->name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </div>
+                </div>
+
+                @if ($selectedSectionId && $selectedSectionId !== '')
+                    @php
+                        $activeSectionName = $allSections->firstWhere('id', $selectedSectionId)?->name ?? '';
+                    @endphp
+                    <div class="grid gap-6 lg:grid-cols-2">
+                        <!-- Columna 1: Empleados de la Sección -->
+                        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col h-fit">
+                            <div class="border-b border-slate-200 px-6 py-4 bg-slate-50">
+                                <h2 class="text-base font-semibold text-slate-950">{{ __('Empleados en :section', ['section' => $activeSectionName]) }}</h2>
+                                <p class="mt-1 text-xs text-slate-500">{{ __('Lista de empleados asignados a esta sección.') }}</p>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-[380px] text-sm">
+                                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-3">{{ __('Empleado') }}</th>
+                                            <th class="px-6 py-3 text-right">{{ __('Acciones') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @forelse ($sectionEmployees as $emp)
+                                            <tr class="hover:bg-slate-50/80">
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <flux:avatar
+                                                            :name="$emp->name"
+                                                            :initials="$emp->initials()"
+                                                            class="bg-[#0f2f5f] text-white size-8 shadow-2xs"
+                                                        />
+                                                        <span class="font-medium text-slate-900">{{ $emp->name }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 text-right">
+                                                    <flux:button size="xs" variant="ghost" icon="eye" wire:click="selectEmployee({{ $emp->id }})">
+                                                        {{ __('Ver Historial') }}
+                                                    </flux:button>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="2" class="px-6 py-12 text-center text-slate-500">
+                                                    {{ __('No hay empleados asignados a esta sección.') }}
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            @if ($sectionEmployees && $sectionEmployees->hasPages())
+                                <div class="border-t border-slate-200 px-6 py-3">
+                                    {{ $sectionEmployees->links() }}
+                                </div>
+                            @endif
+                        </section>
+
+                        <!-- Columna 2: Historial Reciente de la Sección -->
+                        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col h-fit">
+                            <div class="border-b border-slate-200 px-6 py-4 bg-slate-50">
+                                <h2 class="text-base font-semibold text-slate-950">{{ __('Historial Reciente en :section', ['section' => $activeSectionName]) }}</h2>
+                                <p class="mt-1 text-xs text-slate-500">{{ __('Registros de entrada y salida en esta sección.') }}</p>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-[380px] text-sm">
+                                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-3">{{ __('Empleado') }}</th>
+                                            <th class="px-6 py-3">{{ __('Movimiento') }}</th>
+                                            <th class="px-6 py-3">{{ __('Fecha/Hora') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @forelse ($sectionHistory as $rec)
+                                            <tr class="hover:bg-slate-50/80">
+                                                <td class="px-6 py-4 font-medium text-slate-900">
+                                                    {{ $rec->user->name }}
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span @class([
+                                                        'inline-flex rounded-full px-2 py-0.5 text-xs font-semibold',
+                                                        'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' => $rec->type === 'entrada',
+                                                        'bg-amber-50 text-amber-700 ring-1 ring-amber-200' => $rec->type === 'salida',
+                                                    ])>
+                                                        {{ str($rec->type)->title() }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 text-slate-600">
+                                                    {{ $rec->occurred_at->format('Y-m-d H:i:s') }}
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="px-6 py-12 text-center text-slate-500">
+                                                    {{ __('No hay registros de asistencia en esta sección.') }}
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            @if ($sectionHistory && $sectionHistory->hasPages())
+                                <div class="border-t border-slate-200 px-6 py-3">
+                                    {{ $sectionHistory->links() }}
+                                </div>
+                            @endif
+                        </section>
+                    </div>
+                @else
+                    <div class="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm">
+                        <flux:icon.building-office class="size-12 mx-auto text-slate-300" />
+                        <p class="mt-4 font-medium text-slate-900">{{ __('Selecciona una sección') }}</p>
+                        <p class="mt-1 text-sm text-slate-500">{{ __('Por favor, selecciona una de las secciones disponibles para visualizar sus empleados e historial.') }}</p>
+                    </div>
+                @endif
+            </div>
         @endif
     @endif
 </div>
