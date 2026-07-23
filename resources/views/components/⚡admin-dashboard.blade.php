@@ -297,20 +297,20 @@ new class extends Component
         <!-- Profile View -->
         <div class="flex flex-col gap-6">
             <!-- Header / Navigation -->
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-6">
                     <div class="flex items-center gap-4">
                         <flux:avatar
                             :name="$selectedEmployee->name"
                             :initials="$selectedEmployee->initials()"
-                            class="bg-[#0f2f5f] text-white size-14 shadow-xs"
+                            class="bg-[#0f2f5f] text-white size-14 shadow-xs dark:bg-blue-600"
                         />
                         <div>
-                            <h1 class="text-2xl font-bold text-slate-950">{{ $selectedEmployee->name }}</h1>
-                            <p class="text-sm text-slate-500">{{ $selectedEmployee->email }}</p>
+                            <h1 class="text-2xl font-bold text-slate-950 dark:text-slate-100">{{ $selectedEmployee->name }}</h1>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">{{ $selectedEmployee->email }}</p>
                         </div>
                     </div>
-                    <div class="w-64 sm:border-s sm:border-slate-200 sm:ps-6">
+                    <div class="w-64 sm:border-s sm:border-slate-200 sm:ps-6 dark:sm:border-slate-800">
                         <flux:select wire:model.live="employeeSectionId" placeholder="{{ __('Sin sección asignada') }}" label="{{ __('Sección Asignada') }}">
                             @foreach ($allSections as $sec)
                                 <flux:select.option value="{{ $sec->id }}">{{ $sec->name }}</flux:select.option>
@@ -319,7 +319,7 @@ new class extends Component
                     </div>
                 </div>
                 
-                <flux:button icon="arrow-left" variant="filled" wire:click="$set('selectedEmployeeId', null)" class="self-start sm:self-auto cursor-pointer">
+                <flux:button icon="arrow-left" variant="filled" wire:click="$set('selectedEmployeeId', null)" class="self-start sm:self-auto cursor-pointer bg-[#0f2f5f] text-white hover:bg-[#173f7a] dark:bg-blue-600 dark:hover:bg-blue-500">
                     {{ __('Volver al listado') }}
                 </flux:button>
             </div>
@@ -327,34 +327,34 @@ new class extends Component
             <!-- Metric Cards -->
             <div class="grid gap-4 sm:grid-cols-3">
                 <!-- Card 1: Estado Actual -->
-                <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm">
+                <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                     <div class="flex items-center gap-4">
                         @if ($isActive)
-                            <div class="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-2xs">
+                            <div class="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-2xs dark:bg-emerald-950/60 dark:text-emerald-400">
                                 <flux:icon.check class="size-5" />
                             </div>
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Estado Actual') }}</p>
-                                <span class="inline-flex rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 px-2.5 py-0.5 text-xs font-semibold mt-1">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Estado Actual') }}</p>
+                                <span class="inline-flex rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800 px-2.5 py-0.5 text-xs font-semibold mt-1">
                                     {{ __('Activo') }}
                                 </span>
                                 @if ($lastAttendance)
-                                    <p class="text-xs text-slate-400 mt-1">
+                                    <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">
                                         {{ __('Entrada: :time', ['time' => $lastAttendance->occurred_at->format('H:i')]) }}
                                     </p>
                                 @endif
                             </div>
                         @else
-                            <div class="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-400 shadow-2xs">
+                            <div class="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-400 shadow-2xs dark:bg-slate-800 dark:text-slate-400">
                                 <flux:icon.user class="size-5" />
                             </div>
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Estado Actual') }}</p>
-                                <span class="inline-flex rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200 px-2.5 py-0.5 text-xs font-semibold mt-1">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Estado Actual') }}</p>
+                                <span class="inline-flex rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 px-2.5 py-0.5 text-xs font-semibold mt-1">
                                     {{ __('Inactivo') }}
                                 </span>
                                 @if ($lastAttendance)
-                                    <p class="text-xs text-slate-400 mt-1">
+                                    <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">
                                         {{ __('Salida: :time', ['time' => $lastAttendance->occurred_at->format('H:i')]) }}
                                     </p>
                                 @endif
@@ -364,15 +364,15 @@ new class extends Component
                 </div>
 
                 <!-- Card 2: Horas Semanales -->
-                <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm">
+                <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                     <div class="flex items-center gap-4">
-                        <div class="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-[#0f2f5f] shadow-2xs">
+                        <div class="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-[#0f2f5f] shadow-2xs dark:bg-blue-950/60 dark:text-blue-400">
                             <flux:icon.clock class="size-5" />
                         </div>
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Horas esta semana') }}</p>
-                            <p class="text-2xl font-bold text-slate-900 mt-0.5">{{ $hoursThisWeek }} hrs</p>
-                            <p class="text-xs text-slate-400 mt-0.5">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Horas esta semana') }}</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">{{ $hoursThisWeek }} hrs</p>
+                            <p class="text-xs text-slate-400 dark:text-slate-400 mt-0.5">
                                 {{ __('Lun a Dom') }}
                             </p>
                         </div>
@@ -380,15 +380,15 @@ new class extends Component
                 </div>
 
                 <!-- Card 3: Horas Mensuales -->
-                <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm">
+                <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                     <div class="flex items-center gap-4">
-                        <div class="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-2xs">
+                        <div class="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-2xs dark:bg-amber-950/60 dark:text-amber-400">
                             <flux:icon.clock class="size-5" />
                         </div>
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Horas este mes') }}</p>
-                            <p class="text-2xl font-bold text-slate-900 mt-0.5">{{ $hoursThisMonth }} hrs</p>
-                            <p class="text-xs text-slate-400 mt-0.5">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Horas este mes') }}</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">{{ $hoursThisMonth }} hrs</p>
+                            <p class="text-xs text-slate-400 dark:text-slate-400 mt-0.5">
                                 {{ now()->translatedFormat('F Y') }}
                             </p>
                         </div>
@@ -397,24 +397,24 @@ new class extends Component
             </div>
 
             <!-- Línea de Tiempo de Horas Trabajadas Hoy -->
-            <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-4">
+            <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-4 dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-base font-semibold text-slate-950">{{ __('Línea de Tiempo de Presencia (Hoy)') }}</h3>
-                        <p class="text-xs text-slate-500">{{ __('Visualización de los tramos trabajados durante las 24 horas del día de hoy.') }}</p>
+                        <h3 class="text-base font-semibold text-slate-950 dark:text-slate-100">{{ __('Línea de Tiempo de Presencia (Hoy)') }}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Visualización de los tramos trabajados durante las 24 horas del día de hoy.') }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Total Hoy') }}</p>
-                        <p class="text-xl font-bold text-[#0f2f5f]">{{ $totalHoursToday }} hrs</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Total Hoy') }}</p>
+                        <p class="text-xl font-bold text-[#0f2f5f] dark:text-blue-400">{{ $totalHoursToday }} hrs</p>
                     </div>
                 </div>
 
                 <!-- Barra de Línea de Tiempo -->
-                <div class="relative h-6 w-full rounded-lg bg-slate-100/80 border border-slate-200 overflow-hidden">
+                <div class="relative h-6 w-full rounded-lg bg-slate-100/80 border border-slate-200 overflow-hidden dark:bg-slate-800/80 dark:border-slate-700">
                     <!-- Segmentos Trabajados -->
                     @foreach ($timelineSegments as $seg)
                         <div 
-                            class="absolute top-0 bottom-0 @if(isset($seg['is_active'])) bg-gradient-to-r from-emerald-400 to-teal-500 animate-pulse @else bg-gradient-to-r from-[#0f2f5f] to-[#1e4f91] @endif rounded-xs cursor-help"
+                            class="absolute top-0 bottom-0 @if(isset($seg['is_active'])) bg-gradient-to-r from-emerald-400 to-teal-500 animate-pulse @else bg-gradient-to-r from-[#0f2f5f] to-[#1e4f91] dark:from-blue-600 dark:to-blue-400 @endif rounded-xs cursor-help"
                             style="left: {{ $seg['start_pct'] }}%; width: {{ $seg['duration_pct'] }}%;"
                             title="{{ $seg['start_time'] }} - {{ $seg['end_time'] }} ({{ $seg['duration_hrs'] }} hrs)"
                         >
@@ -433,7 +433,7 @@ new class extends Component
                 </div>
 
                 <!-- Ejes de Tiempo / Horas de Referencia -->
-                <div class="flex justify-between text-[10px] font-semibold text-slate-400 px-1 uppercase">
+                <div class="flex justify-between text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-1 uppercase">
                     <span>00:00</span>
                     <span>04:00</span>
                     <span>08:00</span>
@@ -447,56 +447,56 @@ new class extends Component
                 @if (count($timelineSegments) > 0)
                     <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 pt-2">
                         @foreach ($timelineSegments as $seg)
-                            <div class="flex items-center gap-2.5 rounded-lg border border-slate-100 bg-slate-50/50 p-2.5 text-xs">
+                            <div class="flex items-center gap-2.5 rounded-lg border border-slate-100 bg-slate-50/50 p-2.5 text-xs dark:border-slate-800 dark:bg-slate-800/40">
                                 <span @class([
                                     'size-2.5 rounded-full',
                                     'bg-emerald-500' => isset($seg['is_active']),
-                                    'bg-[#0f2f5f]' => !isset($seg['is_active']),
+                                    'bg-[#0f2f5f] dark:bg-blue-400' => !isset($seg['is_active']),
                                 ])></span>
                                 <div class="flex-1">
-                                    <p class="font-medium text-slate-900">{{ $seg['start_time'] }} - {{ $seg['end_time'] }}</p>
-                                    <p class="text-[10px] text-slate-500">{{ __('Duración:') }} {{ $seg['duration_hrs'] }} hrs</p>
+                                    <p class="font-medium text-slate-900 dark:text-slate-100">{{ $seg['start_time'] }} - {{ $seg['end_time'] }}</p>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ __('Duración:') }} {{ $seg['duration_hrs'] }} hrs</p>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-center text-xs text-slate-400 py-2">
+                    <p class="text-center text-xs text-slate-400 dark:text-slate-500 py-2">
                         {{ __('No hay registros de presencia para el día de hoy.') }}
                     </p>
                 @endif
             </div>
 
             <!-- Línea de Tiempo Semanal (Lunes a Domingo) -->
-            <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-6">
+            <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-6 dark:border-slate-800 dark:bg-slate-900/95">
                 <div>
-                    <h3 class="text-base font-semibold text-slate-950">{{ __('Líneas de Tiempo Semanales') }}</h3>
-                    <p class="text-xs text-slate-500">{{ __('Desglose diario del tiempo trabajado durante la semana actual.') }}</p>
+                    <h3 class="text-base font-semibold text-slate-950 dark:text-slate-100">{{ __('Líneas de Tiempo Semanales') }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Desglose diario del tiempo trabajado durante la semana actual.') }}</p>
                 </div>
 
                 <div class="space-y-4">
                     @foreach ($weeklyTimelines as $day)
                         <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center">
                             <!-- Día -->
-                            <div class="w-32 text-xs font-semibold text-slate-700 capitalize">
+                            <div class="w-32 text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">
                                 {{ $day['date_string'] }}
                                 @if ($day['is_today'])
-                                    <span class="ml-1 inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-medium text-emerald-700 ring-1 ring-emerald-600/10">
+                                    <span class="ml-1 inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-medium text-emerald-700 ring-1 ring-emerald-600/10 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800">
                                         {{ __('Hoy') }}
                                     </span>
                                 @endif
                             </div>
 
                             <!-- Barra de Tiempo Compuesta -->
-                            <div class="relative h-4.5 flex-1 rounded-md bg-slate-100/80 border border-slate-200 overflow-hidden">
+                            <div class="relative h-4.5 flex-1 rounded-md bg-slate-100/80 border border-slate-200 overflow-hidden dark:bg-slate-800/80 dark:border-slate-700">
                                 @if ($day['is_future'])
                                     <!-- Día Futuro (Línea discontinua) -->
-                                    <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9_10px,#f8fafc_10px,#f8fafc_20px)] opacity-50"></div>
+                                    <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9_10px,#f8fafc_10px,#f8fafc_20px)] dark:bg-[repeating-linear-gradient(45deg,#1e293b,#1e293b_10px,#0f172a_10px,#0f172a_20px)] opacity-50"></div>
                                 @else
                                     <!-- Segmentos -->
                                     @foreach ($day['segments'] as $seg)
                                         <div 
-                                            class="absolute top-0 bottom-0 @if(isset($seg['is_active'])) bg-gradient-to-r from-emerald-400 to-teal-500 animate-pulse @else bg-gradient-to-r from-[#0f2f5f] to-[#1e4f91] @endif rounded-xs cursor-help"
+                                            class="absolute top-0 bottom-0 @if(isset($seg['is_active'])) bg-gradient-to-r from-emerald-400 to-teal-500 animate-pulse @else bg-gradient-to-r from-[#0f2f5f] to-[#1e4f91] dark:from-blue-600 dark:to-blue-400 @endif rounded-xs cursor-help"
                                             style="left: {{ $seg['start_pct'] }}%; width: {{ $seg['duration_pct'] }}%;"
                                             title="{{ $seg['start_time'] }} - {{ $seg['end_time'] }} ({{ $seg['duration_hrs'] }} hrs)"
                                         >
@@ -518,9 +518,9 @@ new class extends Component
                             </div>
 
                             <!-- Total del Día -->
-                            <div class="w-16 text-right text-xs font-bold text-slate-900">
+                            <div class="w-16 text-right text-xs font-bold text-slate-900 dark:text-slate-100">
                                 @if ($day['is_future'])
-                                    <span class="text-slate-400 font-normal">—</span>
+                                    <span class="text-slate-400 dark:text-slate-500 font-normal">—</span>
                                 @else
                                     {{ $day['total_hours'] }} hrs
                                 @endif
@@ -530,7 +530,7 @@ new class extends Component
                 </div>
 
                 <!-- Ejes de Referencia Horaria -->
-                <div class="flex justify-between text-[10px] font-semibold text-slate-400 px-1 uppercase sm:pl-32 sm:pr-16">
+                <div class="flex justify-between text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-1 uppercase sm:pl-32 sm:pr-16">
                     <span>00:00</span>
                     <span>04:00</span>
                     <span>08:00</span>
@@ -542,15 +542,15 @@ new class extends Component
             </div>
 
             <!-- Attendance History Table -->
-            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-200 px-6 py-4">
-                    <h2 class="text-base font-semibold text-slate-950">{{ __('Historial de Fichajes') }}</h2>
-                    <p class="mt-1 text-sm text-slate-500">{{ __('Historial completo de entradas y salidas de este empleado.') }}</p>
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+                    <h2 class="text-base font-semibold text-slate-950 dark:text-slate-100">{{ __('Historial de Fichajes') }}</h2>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ __('Historial completo de entradas y salidas de este empleado.') }}</p>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[680px] text-sm">
-                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
                             <tr>
                                 <th class="px-6 py-3">{{ __('Tipo') }}</th>
                                 <th class="px-6 py-3">{{ __('Sección') }}</th>
@@ -559,24 +559,24 @@ new class extends Component
                                 <th class="px-6 py-3">{{ __('Ubicación') }}</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             @forelse ($employeeAttendances as $attendance)
-                                <tr class="hover:bg-slate-50/80">
+                                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                                     <td class="px-6 py-4">
                                         <span @class([
                                             'inline-flex rounded-full px-2.5 py-1 text-xs font-semibold',
-                                            'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' => $attendance->type === 'entrada',
-                                            'bg-amber-50 text-amber-700 ring-1 ring-amber-200' => $attendance->type === 'salida',
+                                            'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800' => $attendance->type === 'entrada',
+                                            'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-800' => $attendance->type === 'salida',
                                         ])>
                                             {{ str($attendance->type)->title() }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-slate-700 font-medium">{{ $attendance->section?->name ?? '—' }}</td>
-                                    <td class="px-6 py-4 text-slate-700 font-medium">{{ $attendance->occurred_at->format('Y-m-d') }}</td>
-                                    <td class="px-6 py-4 text-slate-700">{{ $attendance->occurred_at->format('H:i:s') }}</td>
-                                    <td class="px-6 py-4 text-slate-700">
+                                    <td class="px-6 py-4 text-slate-700 dark:text-slate-200 font-medium">{{ $attendance->section?->name ?? '—' }}</td>
+                                    <td class="px-6 py-4 text-slate-700 dark:text-slate-200 font-medium">{{ $attendance->occurred_at->format('Y-m-d') }}</td>
+                                    <td class="px-6 py-4 text-slate-700 dark:text-slate-300">{{ $attendance->occurred_at->format('H:i:s') }}</td>
+                                    <td class="px-6 py-4 text-slate-700 dark:text-slate-300">
                                         @if ($attendance->latitude && $attendance->longitude)
-                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $attendance->latitude }},{{ $attendance->longitude }}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium hover:underline">
+                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $attendance->latitude }},{{ $attendance->longitude }}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline">
                                                 <svg class="size-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -584,13 +584,13 @@ new class extends Component
                                                 <span>{{ round($attendance->latitude, 4) }}, {{ round($attendance->longitude, 4) }}</span>
                                             </a>
                                         @else
-                                            <span class="text-slate-400">—</span>
+                                            <span class="text-slate-400 dark:text-slate-500">—</span>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                         {{ __('Aún no hay registros de asistencia para este empleado.') }}
                                     </td>
                                 </tr>
@@ -599,7 +599,7 @@ new class extends Component
                     </table>
                 </div>
                 @if ($employeeAttendances && $employeeAttendances->hasPages())
-                    <div class="border-t border-slate-200 px-6 py-4">
+                    <div class="border-t border-slate-200 dark:border-slate-800 px-6 py-4">
                         {{ $employeeAttendances->links() }}
                     </div>
                 @endif
@@ -607,55 +607,55 @@ new class extends Component
         </div>
     @else
         <!-- Header -->
-        <header class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <header class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
             <div>
-                <p class="text-sm font-medium uppercase tracking-[0.18em] text-[#1e4f91]">{{ __('Panel de Administración') }}</p>
-                <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{{ __('Control Global de Asistencia') }}</h1>
-                <p class="mt-1 max-w-2xl text-sm text-slate-500">{{ __('Visualiza todos los empleados, sus movimientos recientes y el historial completo de asistencia.') }}</p>
+                <p class="text-sm font-medium uppercase tracking-[0.18em] text-[#1e4f91] dark:text-blue-400">{{ __('Panel de Administración') }}</p>
+                <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">{{ __('Control Global de Asistencia') }}</h1>
+                <p class="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">{{ __('Visualiza todos los empleados, sus movimientos recientes y el historial completo de asistencia.') }}</p>
             </div>
         </header>
 
         <!-- Stats -->
         <div class="grid gap-4 sm:grid-cols-3">
-            <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm">
+            <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-[#0f2f5f] shadow-2xs">
+                    <div class="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-[#0f2f5f] shadow-2xs dark:bg-blue-950/60 dark:text-blue-400">
                         <flux:icon.users class="size-5" />
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Total Empleados') }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-0.5">{{ $totalEmployees }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Total Empleados') }}</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">{{ $totalEmployees }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm">
+            <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-2xs">
+                    <div class="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-2xs dark:bg-emerald-950/60 dark:text-emerald-400">
                         <flux:icon.user class="size-5" />
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Activos Hoy') }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-0.5">{{ $activeToday }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Activos Hoy') }}</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">{{ $activeToday }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm">
+            <div class="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-2xs">
+                    <div class="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-2xs dark:bg-amber-950/60 dark:text-amber-400">
                         <flux:icon.clock class="size-5" />
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Registros Hoy') }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-0.5">{{ $movementsToday }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ __('Registros Hoy') }}</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">{{ $movementsToday }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Search and Tabs -->
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
             <div class="relative flex-1 max-w-md">
                 <flux:input 
                     wire:model.live.debounce.300ms="search" 
@@ -664,25 +664,25 @@ new class extends Component
                 />
             </div>
 
-            <div class="flex border-b border-slate-200 self-start lg:self-auto">
+            <div class="flex border-b border-slate-200 dark:border-slate-800 self-start lg:self-auto">
                 <button wire:click="$set('tab', 'employees')" @class([
                     'px-4 py-2 text-sm font-semibold border-b-2 transition-colors cursor-pointer',
-                    'border-[#0f2f5f] text-[#0f2f5f]' => $tab === 'employees',
-                    'border-transparent text-slate-500 hover:text-slate-700' => $tab !== 'employees'
+                    'border-[#0f2f5f] text-[#0f2f5f] dark:border-blue-400 dark:text-blue-400' => $tab === 'employees',
+                    'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' => $tab !== 'employees'
                 ])>
                     {{ __('Empleados') }}
                 </button>
                 <button wire:click="$set('tab', 'history')" @class([
                     'px-4 py-2 text-sm font-semibold border-b-2 transition-colors cursor-pointer',
-                    'border-[#0f2f5f] text-[#0f2f5f]' => $tab === 'history',
-                    'border-transparent text-slate-500 hover:text-slate-700' => $tab !== 'history'
+                    'border-[#0f2f5f] text-[#0f2f5f] dark:border-blue-400 dark:text-blue-400' => $tab === 'history',
+                    'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' => $tab !== 'history'
                 ])>
                     {{ __('Historial General') }}
                 </button>
                 <button wire:click="$set('tab', 'section_history')" @class([
                     'px-4 py-2 text-sm font-semibold border-b-2 transition-colors cursor-pointer',
-                    'border-[#0f2f5f] text-[#0f2f5f]' => $tab === 'section_history',
-                    'border-transparent text-slate-500 hover:text-slate-700' => $tab !== 'section_history'
+                    'border-[#0f2f5f] text-[#0f2f5f] dark:border-blue-400 dark:text-blue-400' => $tab === 'section_history',
+                    'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' => $tab !== 'section_history'
                 ])>
                     {{ __('Historial por Sección') }}
                 </button>
@@ -691,10 +691,10 @@ new class extends Component
 
         <!-- Content -->
         @if ($tab === 'employees')
-            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[680px] text-sm">
-                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
                             <tr>
                                 <th class="px-6 py-3">{{ __('Empleado') }}</th>
                                 <th class="px-6 py-3">{{ __('Correo') }}</th>
@@ -703,48 +703,48 @@ new class extends Component
                                 <th class="px-6 py-3 text-right">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             @forelse ($employees as $employee)
-                                <tr class="hover:bg-slate-50/80">
+                                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <flux:avatar
                                                 :name="$employee->name"
                                                 :initials="$employee->initials()"
-                                                class="bg-[#0f2f5f] text-white size-9 shadow-2xs"
+                                                class="bg-[#0f2f5f] text-white size-9 shadow-2xs dark:bg-blue-600"
                                             />
-                                            <span class="font-medium text-slate-900">{{ $employee->name }}</span>
+                                            <span class="font-medium text-slate-900 dark:text-slate-100">{{ $employee->name }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $employee->email }}</td>
-                                    <td class="px-6 py-4 text-slate-600 font-semibold">{{ $employee->attendances_count }}</td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ $employee->email }}</td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300 font-semibold">{{ $employee->attendances_count }}</td>
                                     <td class="px-6 py-4">
                                         @if ($last = $employee->attendances->first())
                                             <div class="flex items-center gap-2">
                                                 <span @class([
                                                     'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                                                    'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' => $last->type === 'entrada',
-                                                    'bg-amber-50 text-amber-700 ring-1 ring-amber-200' => $last->type === 'salida',
+                                                    'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800' => $last->type === 'entrada',
+                                                    'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-800' => $last->type === 'salida',
                                                 ])>
                                                     {{ str($last->type)->title() }}
                                                 </span>
-                                                <span class="text-xs text-slate-500">
+                                                <span class="text-xs text-slate-500 dark:text-slate-400">
                                                     {{ $last->occurred_at->format('Y-m-d H:i') }}
                                                 </span>
                                             </div>
                                         @else
-                                            <span class="text-xs text-slate-400">—</span>
+                                            <span class="text-xs text-slate-400 dark:text-slate-500">—</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <flux:button size="sm" variant="ghost" icon="eye" wire:click="selectEmployee({{ $employee->id }})">
+                                        <flux:button size="sm" variant="filled" icon="eye" wire:click="selectEmployee({{ $employee->id }})" class="cursor-pointer bg-[#0f2f5f] text-white hover:bg-[#173f7a] dark:bg-blue-600 dark:hover:bg-blue-500">
                                             {{ __('Ver Historial') }}
                                         </flux:button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                         {{ __('No se encontraron empleados.') }}
                                     </td>
                                 </tr>
@@ -753,16 +753,16 @@ new class extends Component
                     </table>
                 </div>
                 @if ($employees && $employees->hasPages())
-                    <div class="border-t border-slate-200 px-6 py-4">
+                    <div class="border-t border-slate-200 dark:border-slate-800 px-6 py-4">
                         {{ $employees->links() }}
                     </div>
                 @endif
             </section>
         @elseif ($tab === 'history')
-            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[680px] text-sm">
-                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
                             <tr>
                                 <th class="px-6 py-3">{{ __('Empleado') }}</th>
                                 <th class="px-6 py-3">{{ __('Correo') }}</th>
@@ -773,35 +773,35 @@ new class extends Component
                                 <th class="px-6 py-3">{{ __('Ubicación') }}</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             @forelse ($history as $record)
-                                <tr class="hover:bg-slate-50/80">
-                                    <td class="px-6 py-4 font-medium text-slate-900">
+                                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                                    <td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
                                         <div class="flex items-center gap-3">
                                             <flux:avatar
                                                 :name="$record->user->name"
                                                 :initials="$record->user->initials()"
-                                                class="bg-[#0f2f5f] text-white size-8 shadow-2xs"
+                                                class="bg-[#0f2f5f] text-white size-8 shadow-2xs dark:bg-blue-600"
                                             />
                                             <span>{{ $record->user->name }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $record->user->email }}</td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ $record->user->email }}</td>
                                     <td class="px-6 py-4">
                                         <span @class([
                                             'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                                            'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' => $record->type === 'entrada',
-                                            'bg-amber-50 text-amber-700 ring-1 ring-amber-200' => $record->type === 'salida',
+                                            'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800' => $record->type === 'entrada',
+                                            'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-800' => $record->type === 'salida',
                                         ])>
                                             {{ str($record->type)->title() }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-slate-700 font-medium">{{ $record->section?->name ?? '—' }}</td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $record->occurred_at->format('Y-m-d') }}</td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $record->occurred_at->format('H:i:s') }}</td>
-                                    <td class="px-6 py-4 text-slate-700">
+                                    <td class="px-6 py-4 text-slate-700 dark:text-slate-200 font-medium">{{ $record->section?->name ?? '—' }}</td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ $record->occurred_at->format('Y-m-d') }}</td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ $record->occurred_at->format('H:i:s') }}</td>
+                                    <td class="px-6 py-4 text-slate-700 dark:text-slate-300">
                                         @if ($record->latitude && $record->longitude)
-                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $record->latitude }},{{ $record->longitude }}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium hover:underline">
+                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $record->latitude }},{{ $record->longitude }}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline">
                                                 <svg class="size-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -809,13 +809,13 @@ new class extends Component
                                                 <span>{{ round($record->latitude, 4) }}, {{ round($record->longitude, 4) }}</span>
                                             </a>
                                         @else
-                                            <span class="text-slate-400">—</span>
+                                            <span class="text-slate-400 dark:text-slate-500">—</span>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                         {{ __('No hay registros de asistencia.') }}
                                     </td>
                                 </tr>
@@ -824,7 +824,7 @@ new class extends Component
                     </table>
                 </div>
                 @if ($history && $history->hasPages())
-                    <div class="border-t border-slate-200 px-6 py-4">
+                    <div class="border-t border-slate-200 dark:border-slate-800 px-6 py-4">
                         {{ $history->links() }}
                     </div>
                 @endif
@@ -832,7 +832,7 @@ new class extends Component
         @else
             <!-- Pestaña de Historial por Sección -->
             <div class="flex flex-col gap-6">
-                <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+                <div class="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
                     <div class="max-w-md">
                         <flux:select wire:model.live="selectedSectionId" placeholder="{{ __('Seleccionar sección...') }}" label="{{ __('Selecciona una sección') }}">
                             @foreach ($allSections as $sec)
@@ -848,42 +848,42 @@ new class extends Component
                     @endphp
                     <div class="grid gap-6 lg:grid-cols-2">
                         <!-- Columna 1: Empleados de la Sección -->
-                        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col h-fit">
-                            <div class="border-b border-slate-200 px-6 py-4 bg-slate-50">
-                                <h2 class="text-base font-semibold text-slate-950">{{ __('Empleados en :section', ['section' => $activeSectionName]) }}</h2>
-                                <p class="mt-1 text-xs text-slate-500">{{ __('Lista de empleados asignados a esta sección.') }}</p>
+                        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col h-fit dark:border-slate-800 dark:bg-slate-900">
+                            <div class="border-b border-slate-200 px-6 py-4 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60">
+                                <h2 class="text-base font-semibold text-slate-950 dark:text-slate-100">{{ __('Empleados en :section', ['section' => $activeSectionName]) }}</h2>
+                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ __('Lista de empleados asignados a esta sección.') }}</p>
                             </div>
 
                             <div class="overflow-x-auto">
                                 <table class="w-full min-w-[380px] text-sm">
-                                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-100">
+                                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-100 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-800">
                                         <tr>
                                             <th class="px-6 py-3">{{ __('Empleado') }}</th>
                                             <th class="px-6 py-3 text-right">{{ __('Acciones') }}</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-100">
+                                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                                         @forelse ($sectionEmployees as $emp)
-                                            <tr class="hover:bg-slate-50/80">
+                                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                                                 <td class="px-6 py-4">
                                                     <div class="flex items-center gap-3">
                                                         <flux:avatar
                                                             :name="$emp->name"
                                                             :initials="$emp->initials()"
-                                                            class="bg-[#0f2f5f] text-white size-8 shadow-2xs"
+                                                            class="bg-[#0f2f5f] text-white size-8 shadow-2xs dark:bg-blue-600"
                                                         />
-                                                        <span class="font-medium text-slate-900">{{ $emp->name }}</span>
+                                                        <span class="font-medium text-slate-900 dark:text-slate-100">{{ $emp->name }}</span>
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 text-right">
-                                                    <flux:button size="xs" variant="ghost" icon="eye" wire:click="selectEmployee({{ $emp->id }})">
+                                                    <flux:button size="xs" variant="filled" icon="eye" wire:click="selectEmployee({{ $emp->id }})" class="cursor-pointer bg-[#0f2f5f] text-white hover:bg-[#173f7a] dark:bg-blue-600 dark:hover:bg-blue-500">
                                                         {{ __('Ver Historial') }}
                                                     </flux:button>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="2" class="px-6 py-12 text-center text-slate-500">
+                                                <td colspan="2" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                                     {{ __('No hay empleados asignados a esta sección.') }}
                                                 </td>
                                             </tr>
@@ -892,50 +892,50 @@ new class extends Component
                                 </table>
                             </div>
                             @if ($sectionEmployees && $sectionEmployees->hasPages())
-                                <div class="border-t border-slate-200 px-6 py-3">
+                                <div class="border-t border-slate-200 dark:border-slate-800 px-6 py-3">
                                     {{ $sectionEmployees->links() }}
                                 </div>
                             @endif
                         </section>
 
                         <!-- Columna 2: Historial Reciente de la Sección -->
-                        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col h-fit">
-                            <div class="border-b border-slate-200 px-6 py-4 bg-slate-50">
-                                <h2 class="text-base font-semibold text-slate-950">{{ __('Historial Reciente en :section', ['section' => $activeSectionName]) }}</h2>
-                                <p class="mt-1 text-xs text-slate-500">{{ __('Registros de entrada y salida en esta sección.') }}</p>
+                        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col h-fit dark:border-slate-800 dark:bg-slate-900">
+                            <div class="border-b border-slate-200 px-6 py-4 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60">
+                                <h2 class="text-base font-semibold text-slate-950 dark:text-slate-100">{{ __('Historial Reciente en :section', ['section' => $activeSectionName]) }}</h2>
+                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ __('Registros de entrada y salida en esta sección.') }}</p>
                             </div>
 
                             <div class="overflow-x-auto">
                                 <table class="w-full min-w-[380px] text-sm">
-                                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-100">
+                                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-100 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-800">
                                         <tr>
                                             <th class="px-6 py-3">{{ __('Empleado') }}</th>
                                             <th class="px-6 py-3">{{ __('Movimiento') }}</th>
                                             <th class="px-6 py-3">{{ __('Fecha/Hora') }}</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-100">
+                                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                                         @forelse ($sectionHistory as $rec)
-                                            <tr class="hover:bg-slate-50/80">
-                                                <td class="px-6 py-4 font-medium text-slate-900">
+                                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
                                                     {{ $rec->user->name }}
                                                 </td>
                                                 <td class="px-6 py-4">
                                                     <span @class([
                                                         'inline-flex rounded-full px-2 py-0.5 text-xs font-semibold',
-                                                        'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' => $rec->type === 'entrada',
-                                                        'bg-amber-50 text-amber-700 ring-1 ring-amber-200' => $rec->type === 'salida',
+                                                        'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800' => $rec->type === 'entrada',
+                                                        'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-800' => $rec->type === 'salida',
                                                     ])>
                                                         {{ str($rec->type)->title() }}
                                                     </span>
                                                 </td>
-                                                <td class="px-6 py-4 text-slate-600">
+                                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
                                                     {{ $rec->occurred_at->format('Y-m-d H:i:s') }}
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="px-6 py-12 text-center text-slate-500">
+                                                <td colspan="3" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                                     {{ __('No hay registros de asistencia en esta sección.') }}
                                                 </td>
                                             </tr>
@@ -944,17 +944,17 @@ new class extends Component
                                 </table>
                             </div>
                             @if ($sectionHistory && $sectionHistory->hasPages())
-                                <div class="border-t border-slate-200 px-6 py-3">
+                                <div class="border-t border-slate-200 dark:border-slate-800 px-6 py-3">
                                     {{ $sectionHistory->links() }}
                                 </div>
                             @endif
                         </section>
                     </div>
                 @else
-                    <div class="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm">
-                        <flux:icon.building-office class="size-12 mx-auto text-slate-300" />
-                        <p class="mt-4 font-medium text-slate-900">{{ __('Selecciona una sección') }}</p>
-                        <p class="mt-1 text-sm text-slate-500">{{ __('Por favor, selecciona una de las secciones disponibles para visualizar sus empleados e historial.') }}</p>
+                    <div class="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                        <flux:icon.building-office class="size-12 mx-auto text-slate-300 dark:text-slate-600" />
+                        <p class="mt-4 font-medium text-slate-900 dark:text-slate-100">{{ __('Selecciona una sección') }}</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ __('Por favor, selecciona una de las secciones disponibles para visualizar sus empleados e historial.') }}</p>
                     </div>
                 @endif
             </div>
