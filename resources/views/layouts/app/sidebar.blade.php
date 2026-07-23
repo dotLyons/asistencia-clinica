@@ -3,15 +3,15 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen text-slate-900 antialiased">
-        <flux:sidebar sticky collapsible="mobile" class="dark border-e border-white/10 bg-[#0f172a] text-slate-100 shadow-xl shadow-slate-950/10">
-            <flux:sidebar.header class="border-b border-white/10 px-4 py-5">
+    <body class="min-h-screen text-slate-900 dark:text-slate-100 antialiased">
+        <flux:sidebar sticky collapsible="mobile" class="border-e border-slate-200 bg-white/95 text-slate-800 shadow-xl shadow-slate-950/5 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100">
+            <flux:sidebar.header class="border-b border-slate-200 dark:border-slate-800 px-4 py-5">
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
             <flux:sidebar.nav class="px-3 py-4">
-                <flux:sidebar.group :heading="__('Plataforma')" class="grid text-slate-300">
+                <flux:sidebar.group :heading="__('Plataforma')" class="grid text-slate-500 dark:text-slate-400">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
@@ -25,15 +25,15 @@
 
             <flux:spacer />
 
-            <div class="border-t border-white/10 p-3">
+            <div class="border-t border-slate-200 dark:border-slate-800 p-3">
                 <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
             </div>
         </flux:sidebar>
 
-        <flux:header class="border-b border-slate-200 bg-white/90 shadow-sm backdrop-blur lg:hidden">
+        <flux:header class="border-b border-slate-200 bg-white/90 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
-            <div class="ms-2 text-sm font-semibold text-slate-800">{{ config('app.name', 'Asistencia') }}</div>
+            <div class="ms-2 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ config('app.name', 'Asistencia') }}</div>
 
             <flux:spacer />
 
