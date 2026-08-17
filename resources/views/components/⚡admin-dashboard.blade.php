@@ -5,7 +5,10 @@ use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Section;
 use App\Models\Attendance;
+use App\Models\Invoice;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use setasign\Fpdi\Fpdi;
 
 new class extends Component
 {
@@ -16,6 +19,16 @@ new class extends Component
     public ?int $selectedEmployeeId = null;
     public ?int $employeeSectionId = null;
     public ?int $selectedSectionId = null;
+
+    // Properties for downloading invoice history
+    public ?int $history_month = null;
+    public ?int $history_year = null;
+
+    public function mount(): void
+    {
+        $this->history_month = (int) now()->format('n');
+        $this->history_year = (int) now()->format('Y');
+    }
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -43,6 +56,7 @@ new class extends Component
         $employee = User::find($id);
         $this->employeeSectionId = $employee?->section_id;
         $this->resetPage('employee-attendances-page');
+        $this->resetPage('employee-invoices-page');
     }
 
     public function updatedEmployeeSectionId($value): void
@@ -55,6 +69,64 @@ new class extends Component
                 \Flux\Flux::toast(variant: 'success', text: __('Sección asignada correctamente.'));
             }
         }
+    }
+
+    public function downloadMergedHistory(): mixed
+    {
+        $this->validate([
+            'history_month' => 'required|integer|between:1,12',
+            'history_year' => 'required|integer|between:2020,2035',
+        ]);
+
+        $invoices = Invoice::where('user_id', $this->selectedEmployeeId)
+            ->where('month', $this->history_month)
+            ->where('year', $this->history_year)
+            ->get();
+
+        if ($invoices->isEmpty()) {
+            $this->addError('history_month', __('No se encontraron facturas para el periodo seleccionado.'));
+            return null;
+        }
+
+        $pdf = new Fpdi();
+        $filesMerged = 0;
+
+        foreach ($invoices as $invoice) {
+            $filePath = Storage::disk('public')->path($invoice->pdf_path);
+            if (file_exists($filePath)) {
+                try {
+                    $pageCount = $pdf->setSourceFile($filePath);
+                    for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                        $templateId = $pdf->importPage($pageNo);
+                        $size = $pdf->getTemplateSize($templateId);
+                        $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                        $pdf->useTemplate($templateId);
+                    }
+                    $filesMerged++;
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("Failed to import PDF page for invoice ID {$invoice->id}: " . $e->getMessage());
+                    continue;
+                }
+            }
+        }
+
+        if ($filesMerged === 0) {
+            $this->addError('history_month', __('No se pudieron procesar las facturas del periodo seleccionado.'));
+            return null;
+        }
+
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'merged_invoice_') . '.pdf';
+        $pdf->Output('F', $tempFilePath);
+
+        $selectedEmployee = User::find($this->selectedEmployeeId);
+        $employeeName = \Illuminate\Support\Str::slug($selectedEmployee?->name) ?: 'empleado';
+        $filename = "historial-facturas-{$employeeName}-{$this->history_year}-" . str_pad($this->history_month, 2, '0', STR_PAD_LEFT) . ".pdf";
+
+        $this->dispatch('close-modal', 'download-history-modal');
+
+        return response()->download($tempFilePath, $filename, [
+            'Content-Type' => 'application/pdf',
+        ])->deleteFileAfterSend(true);
     }
     private function getHoursWorked(User $user, \Carbon\CarbonInterface $start, \Carbon\CarbonInterface $end): float
     {
@@ -164,6 +236,26 @@ new class extends Component
                     ->latest('id')
                     ->paginate(10, pageName: 'employee-attendances-page');
 
+                $employeeInvoices = Invoice::where('user_id', $this->selectedEmployeeId)
+                    ->with('section')
+                    ->latest()
+                    ->paginate(10, pageName: 'employee-invoices-page');
+
+                $monthsList = [
+                    1 => __('Enero'),
+                    2 => __('Febrero'),
+                    3 => __('Marzo'),
+                    4 => __('Abril'),
+                    5 => __('Mayo'),
+                    6 => __('Junio'),
+                    7 => __('Julio'),
+                    8 => __('Agosto'),
+                    9 => __('Septiembre'),
+                    10 => __('Octubre'),
+                    11 => __('Noviembre'),
+                    12 => __('Diciembre'),
+                ];
+
                 // Today
                 $todayData = $this->getTimelineSegmentsForDate($selectedEmployee, today());
                 $timelineSegments = $todayData['segments'];
@@ -192,6 +284,8 @@ new class extends Component
                 'hoursThisWeek' => $hoursThisWeek,
                 'hoursThisMonth' => $hoursThisMonth,
                 'employeeAttendances' => $employeeAttendances,
+                'employeeInvoices' => $employeeInvoices,
+                'monthsList' => $monthsList,
                 'timelineSegments' => $timelineSegments,
                 'totalHoursToday' => $totalHoursToday,
                 'weeklyTimelines' => $weeklyTimelines,
@@ -604,6 +698,130 @@ new class extends Component
                     </div>
                 @endif
             </section>
+
+            <!-- Invoices History Table -->
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 mt-6">
+                <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-800 flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <h2 class="text-base font-semibold text-slate-950 dark:text-slate-100">{{ __('Historial de Facturaciones') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ __('Facturas presentadas por este empleado.') }}</p>
+                    </div>
+                    <div>
+                        <flux:modal.trigger name="download-history-modal">
+                            <flux:button icon="arrow-down-tray" variant="filled" class="cursor-pointer bg-[#0f2f5f] text-white hover:bg-[#173f7a] dark:bg-blue-600 dark:hover:bg-blue-500">
+                                {{ __('Descargar Historia') }}
+                            </flux:button>
+                        </flux:modal.trigger>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[680px] text-sm">
+                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+                            <tr>
+                                <th class="px-6 py-3">{{ __('Periodo') }}</th>
+                                <th class="px-6 py-3">{{ __('Sector') }}</th>
+                                <th class="px-6 py-3">{{ __('Nº Factura') }}</th>
+                                <th class="px-6 py-3">{{ __('Emisión') }}</th>
+                                <th class="px-6 py-3">{{ __('Monto') }}</th>
+                                <th class="px-6 py-3 text-right">{{ __('Acciones') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            @forelse ($employeeInvoices as $invoice)
+                                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                                    <td class="px-6 py-4 font-medium text-slate-950 dark:text-slate-100">
+                                        {{ $monthsList[$invoice->month] ?? $invoice->month }} {{ $invoice->year }}
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        {{ $invoice->section?->name ?? '—' }}
+                                    </td>
+                                    <td class="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+                                        {{ $invoice->invoice_number }}
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        {{ $invoice->issue_date->format('d/m/Y') }}
+                                    </td>
+                                    <td class="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
+                                        ${{ number_format($invoice->amount, 2, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                                        <flux:button 
+                                            size="sm" 
+                                            variant="filled" 
+                                            icon="document-text" 
+                                            as="a"
+                                            href="{{ asset('storage/' . $invoice->pdf_path) }}"
+                                            target="_blank"
+                                            class="cursor-pointer bg-[#0f2f5f] text-white hover:bg-[#173f7a] dark:bg-blue-600 dark:hover:bg-blue-500"
+                                            title="{{ __('Ver PDF') }}"
+                                        >
+                                            {{ __('Ver PDF') }}
+                                        </flux:button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                        {{ __('No se encontraron facturas cargadas para este empleado.') }}
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                @if ($employeeInvoices && $employeeInvoices->hasPages())
+                    <div class="border-t border-slate-200 dark:border-slate-800 px-6 py-4">
+                        {{ $employeeInvoices->links() }}
+                    </div>
+                @endif
+            </section>
+
+            <!-- Modal for downloading invoice history -->
+            <flux:modal name="download-history-modal" class="max-w-lg">
+                <form wire:submit="downloadMergedHistory" class="space-y-6">
+                    <div>
+                        <flux:heading size="lg">{{ __('Descargar Historia de Facturación') }}</flux:heading>
+                        <flux:subheading>
+                            {{ __('Selecciona el mes y año para compilar y descargar todas las facturas de este empleado en un único archivo PDF.') }}
+                        </flux:subheading>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <flux:select wire:model="history_month" :label="__('Mes')" required>
+                            @foreach ($monthsList as $num => $name)
+                                <flux:select.option value="{{ $num }}">{{ $name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+
+                        <flux:select wire:model="history_year" :label="__('Año')" required>
+                            @for ($y = date('Y') + 1; $y >= date('Y') - 5; $y--)
+                                <flux:select.option value="{{ $y }}">{{ $y }}</flux:select.option>
+                            @endfor
+                        </flux:select>
+                    </div>
+
+                    @error('history_month')
+                        <p class="text-xs font-semibold text-rose-600 dark:text-rose-400 mt-1">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
+                    <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                        <flux:modal.close>
+                            <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                        </flux:modal.close>
+
+                        <flux:button 
+                            variant="primary" 
+                            type="submit" 
+                            class="cursor-pointer bg-[#0f2f5f] hover:bg-[#173f7a] text-white dark:bg-blue-600 dark:hover:bg-blue-500"
+                        >
+                            {{ __('Descargar PDF') }}
+                        </flux:button>
+                    </div>
+                </form>
+            </flux:modal>
         </div>
     @else
         <!-- Header -->

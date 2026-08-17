@@ -66,4 +66,14 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->belongsTo(Section::class);
     }
+
+    /**
+     * Get the invoices uploaded by the user.
+     *
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }

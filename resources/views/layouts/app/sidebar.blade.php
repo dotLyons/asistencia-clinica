@@ -20,6 +20,11 @@
                             {{ __('Secciones') }}
                         </flux:sidebar.item>
                     @endif
+                    @if (auth()->user()->hasRole('empleado'))
+                        <flux:sidebar.item icon="document-text" :href="route('invoices')" :current="request()->routeIs('invoices')" wire:navigate>
+                            {{ __('Facturación') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
