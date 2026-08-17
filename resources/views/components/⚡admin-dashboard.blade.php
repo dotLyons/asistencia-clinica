@@ -751,7 +751,7 @@ new class extends Component
                                             variant="filled" 
                                             icon="document-text" 
                                             as="a"
-                                            href="{{ asset('storage/' . $invoice->pdf_path) }}"
+                                            href="{{ route('invoices.download', $invoice) }}"
                                             target="_blank"
                                             class="cursor-pointer bg-[#0f2f5f] text-white hover:bg-[#173f7a] dark:bg-blue-600 dark:hover:bg-blue-500"
                                             title="{{ __('Ver PDF') }}"

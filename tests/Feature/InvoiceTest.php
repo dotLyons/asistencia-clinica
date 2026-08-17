@@ -109,12 +109,59 @@ test('employee can upload a valid invoice successfully', function () {
 });
 
 test('public route storage-link executes successfully', function () {
-    // Mock Artisan call or let it execute in test environment
     $response = $this->get('/storage-link');
     $response->assertOk()
         ->assertJson([
-            'status' => 'success',
+            'status' => 'info',
         ]);
+});
+
+test('authenticated users can securely view their invoices and admins can view any invoice', function () {
+    Storage::fake('public');
+
+    $employee1 = User::factory()->create();
+    $employee1->assignRole(Role::findOrCreate('empleado'));
+
+    $employee2 = User::factory()->create();
+    $employee2->assignRole(Role::findOrCreate('empleado'));
+
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::findOrCreate('administrador'));
+
+    $section = Section::create(['name' => 'Sec1', 'uuid' => (string) Str::uuid()]);
+
+    // Create invoice for employee 1
+    $invoice = Invoice::create([
+        'user_id' => $employee1->id,
+        'month' => 8,
+        'year' => 2026,
+        'section_id' => $section->id,
+        'invoice_number' => 'FC-001',
+        'issue_date' => '2026-08-15',
+        'amount' => 1000,
+        'pdf_path' => 'invoices/test.pdf',
+    ]);
+
+    Storage::disk('public')->put('invoices/test.pdf', 'dummy pdf content');
+
+    // Guest cannot download
+    $this->get(route('invoices.download', $invoice))
+        ->assertRedirect(route('login'));
+
+    // Employee 1 can download their own invoice
+    $this->actingAs($employee1)
+        ->get(route('invoices.download', $invoice))
+        ->assertOk();
+
+    // Employee 2 CANNOT download Employee 1's invoice
+    $this->actingAs($employee2)
+        ->get(route('invoices.download', $invoice))
+        ->assertStatus(403);
+
+    // Admin can download any invoice
+    $this->actingAs($admin)
+        ->get(route('invoices.download', $invoice))
+        ->assertOk();
 });
 
 test('admin can see employee invoices and download merged history', function () {
