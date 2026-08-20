@@ -296,7 +296,7 @@ new class extends Component
         </section>
 
         <!-- History Column -->
-        <section class="flex flex-col gap-4">
+        <section class="flex flex-col gap-4 min-w-0">
             <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
                     <h2 class="text-base font-semibold text-slate-950 dark:text-slate-100">{{ __('Mis Facturas Cargadas') }}</h2>
