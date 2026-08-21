@@ -24,6 +24,7 @@ class Invoice extends Model
         'issue_date',
         'amount',
         'pdf_path',
+        'billing_period_id',
     ];
 
     /**
@@ -57,5 +58,15 @@ class Invoice extends Model
     public function section(): BelongsTo
     {
         return $this->belongsTo(Section::class);
+    }
+
+    /**
+     * Get the billing period associated with this invoice.
+     *
+     * @return BelongsTo<BillingPeriod, $this>
+     */
+    public function billingPeriod(): BelongsTo
+    {
+        return $this->belongsTo(BillingPeriod::class);
     }
 }

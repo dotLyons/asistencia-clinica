@@ -25,6 +25,14 @@
                             {{ __('Facturación') }}
                         </flux:sidebar.item>
                     @endif
+                    @if (auth()->user()->hasRole('prestador'))
+                        <flux:sidebar.item icon="calendar" :href="route('billing-periods')" :current="request()->routeIs('billing-periods')" wire:navigate>
+                            {{ __('Mis Rondas') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="document-text" :href="route('prestador.invoices')" :current="request()->routeIs('prestador.invoices')" wire:navigate>
+                            {{ __('Mis Facturas') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

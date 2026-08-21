@@ -16,6 +16,14 @@ class DashboardController extends Controller
             return view('dashboard-admin');
         }
 
+        if ($request->user()->hasRole('director')) {
+            return view('dashboard-director');
+        }
+
+        if ($request->user()->hasRole('prestador')) {
+            return view('dashboard-prestador');
+        }
+
         $attendances = $request->user()
             ->attendances()
             ->latest('occurred_at')

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -75,5 +76,25 @@ class User extends Authenticatable implements PasskeyUser
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Get the billing periods this user belongs to.
+     *
+     * @return BelongsToMany<BillingPeriod, $this>
+     */
+    public function billingPeriods(): BelongsToMany
+    {
+        return $this->belongsToMany(BillingPeriod::class);
+    }
+
+    /**
+     * Get the billing periods created by this user.
+     *
+     * @return HasMany<BillingPeriod, $this>
+     */
+    public function createdBillingPeriods(): HasMany
+    {
+        return $this->hasMany(BillingPeriod::class, 'creator_id');
     }
 }
